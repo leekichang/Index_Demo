@@ -3,16 +3,16 @@ import socket
 import numpy as np
 import pickle
 import cv2
+import config as cfg
 
 from SegNet import SegNet
 
 HOST = '127.0.0.1'
 PORT = 9999
-
 model = SegNet(n_layers=13, n_class=3)
-model.load_state_dict(torch.load('./reconstructor_300.pth'))
+model.load_state_dict(torch.load('./reconstructor_300.pth', map_location=torch.device(cfg.DEVICE)))
 model.eval()
-model = model.to('cuda')
+model = model.to(cfg.DEVICE)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
@@ -42,10 +42,10 @@ while True:
     conn, addr = s.accept()
     print('Connected by', addr)
     features, indices, shapes = receive_features(conn)
-    features = features.to('cuda')
+    features = features.to(cfg.DEVICE)
     model.set_index(indices, shapes)
     for i, index in enumerate(model.indices):
-        model.indices[i] = index.to('cuda')
+        model.indices[i] = index.to(cfg.DEVICE)
     with torch.no_grad():
         out = model.decode(features)
         out = out.to('cpu').numpy()
