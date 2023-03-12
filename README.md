@@ -1,2 +1,2 @@
 # Index_Demo
-repository for index deom
+repository for index demo
