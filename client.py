@@ -15,9 +15,8 @@ model = SegNet(n_layers=13, n_class=3)
 model.load_state_dict(torch.load('./reconstructor_300.pth'))
 model.to('cuda')
 model.eval()
-np.random.seed(20000811)
 
-HOST = '127.0.0.1'
+HOST = '1.233.219.178'
 PORT = 9999
 
 def send(features):
