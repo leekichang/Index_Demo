@@ -4,20 +4,21 @@ import torch
 import socket
 import numpy as np
 import pickle
+import config as cfg
 
 from SegNet import SegNet
 
 import warnings
-
 warnings.filterwarnings(action='ignore')
 
 model = SegNet(n_layers=13, n_class=3)
-model.load_state_dict(torch.load('./reconstructor_300.pth'))
-model.to('cuda')
+model.load_state_dict(torch.load('./reconstructor_300.pth', map_location=torch.device(cfg.DEVICE)))
+model.to(cfg.DEVICE)
 model.eval()
+np.random.seed(20000811)
 
-HOST = '1.233.219.178'
-PORT = 9999
+HOST = '192.168.0.14'
+PORT = 9004
 
 def send(features):
     #features = np.array(features)
@@ -30,7 +31,7 @@ def send(features):
 # features = np.random.randn(1,10)
 
 #img = cv2.imread('./0_image.png', cv2.IMREAD_COLOR)
-img_ = np.array(cv2.imread('./5_image.png', cv2.IMREAD_COLOR)/255).transpose(2,0,1)
+img_ = np.array(cv2.imread('./0_image.png', cv2.IMREAD_COLOR)/255).transpose(2,0,1)
 
 #cv2.imshow('image', img)
 #cv2.waitKey(0)
@@ -38,17 +39,17 @@ img_ = np.array(cv2.imread('./5_image.png', cv2.IMREAD_COLOR)/255).transpose(2,0
 
 X = torch.rand((1,3,224,224))
 X[0] = torch.tensor(img_)
-X = X.to('cuda')
+X = X.to(cfg.DEVICE)
 
 with torch.no_grad():
     features = model.encode(X)
-features = features.to('cpu')
+features = features.to(cfg.DEVICE)
 # print(features.shape)
 
 indices = []
 
 for idx in model.indices:
-    indices.append(idx.to('cpu'))
+    indices.append(idx.to(cfg.DEVICE))
 
 feature_dict = {'feature':features, 'indices':indices, 'shapes':model.shapes}
 

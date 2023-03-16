@@ -7,23 +7,22 @@ import config as cfg
 
 from SegNet import SegNet
 
-HOST = '127.0.0.1'
-PORT = 9999
 model = SegNet(n_layers=13, n_class=3)
 model.load_state_dict(torch.load('./reconstructor_300.pth', map_location=torch.device(cfg.DEVICE)))
 model.eval()
 model = model.to(cfg.DEVICE)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((HOST, PORT))
-s.listen()
+HOST = '0.0.0.0'
+PORT = 9784
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_address = (HOST, PORT)
+server_socket.bind((HOST, PORT))
+server_socket.listen(1)
 
-def receive_features(conn):
-    #all_features = []
-    #all_indices  = []
+def receive_features(client_socket):
     result_bytes = b''
     while True:
-        data = conn.recv(1024)
+        data = client_socket.recv(1024)
         if not data:
             break
         result_bytes += data
@@ -33,26 +32,28 @@ def receive_features(conn):
     indices  = result['indices']
     shapes   = result['shapes']
     return features, indices, shapes
-    #all_features.extend(features)
-    #all_indices.extend(indices)
-    #return all_features, all_indices
+
+msg = 'DONE!'
+msg_bytes = pickle.dumps(msg)
 
 print("Server is ready!")
 while True:
-    conn, addr = s.accept()
-    print('Connected by', addr)
-    features, indices, shapes = receive_features(conn)
-    features = features.to(cfg.DEVICE)
-    model.set_index(indices, shapes)
-    for i, index in enumerate(model.indices):
-        model.indices[i] = index.to(cfg.DEVICE)
-    with torch.no_grad():
-        out = model.decode(features)
-        out = out.to('cpu').numpy()
-    img = out[0].transpose(1,2,0) * 255
-    cv2.imwrite('./result.png', img)
-    print(f'server side operation for {addr} is done')
-    conn.close()
-
-
-
+	client_socket, client_address = server_socket.accept()
+	print('Connected by', client_address)
+	features, indices, shapes = receive_features(client_socket)
+	print("RECEIVCED THE FEATURES START OPERATION")
+        
+	features = features.to(cfg.DEVICE)
+	model.set_index(indices, shapes)
+	for i, index in enumerate(model.indices):
+		model.indices[i] = index.to(cfg.DEVICE)
+	with torch.no_grad():
+		out = model.decode(features)
+		out = out.to('cpu').numpy()
+	# img = out[0].transpose(1,2,0)*255
+	# cv2.imwrite('./result.png', img)
+	# img = cv2.imread('./result.png')
+	print(f'server side operation for {client_address} is done')
+	client_socket.sendall(msg_bytes)
+	print("Sent check msg")
+	client_socket.close()
