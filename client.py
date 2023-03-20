@@ -73,7 +73,7 @@ class Client:
     def recv(self):
         data_total_len = int(self.socket.recv(1024))
         left_recv_len  = data_total_len
-        buffer_size    = 16384
+        buffer_size    = 32768
         time.sleep(1)
 
         recv_data = []
@@ -88,6 +88,8 @@ class Client:
         else:
             result = pickle.loads(b"".join(recv_data))
             print(f'받은 데이터:{result.shape}\n{data_total_len}')
+            result = result[0].transpose(1,2,0).numpy()
+            cv2.imwrite('./result.png', result)
     
     def run(self):
         while True:
