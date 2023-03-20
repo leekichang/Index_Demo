@@ -71,9 +71,9 @@ class Client:
                     break
 
     def recv(self):
-        data_total_len     = int(self.socket.recv(1024))
-        left_recv_len      = data_total_len
-        buffer_size        = 4096
+        data_total_len = int(self.socket.recv(1024))
+        left_recv_len  = data_total_len
+        buffer_size    = 16384
         time.sleep(1)
 
         recv_data = []

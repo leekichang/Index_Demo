@@ -57,7 +57,7 @@ class Server:
 	def recv(self):
 		data_total_len = int(self.client_socket.recv(1024))
 		left_recv_len  = data_total_len
-		buffer_size    = 4096
+		buffer_size    = 16384
 		
 		if data_total_len == -1:
 			print("DISCONNECTED!")
