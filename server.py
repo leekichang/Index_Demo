@@ -77,7 +77,7 @@ class Server:
 			print("Packet Loss!")
 		else:
 			self.request = pickle.loads(b"".join(recv_data))
-			print(f'받은 데이터:{type(self.request)}\nlen(data):{data_total_len}')
+			print(f'Received Data:{type(self.request)}\nlen(data):{data_total_len}')
         
 	def connect(self):
 		print("WAITING FOR NEW CONNECTION")

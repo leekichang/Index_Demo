@@ -87,7 +87,7 @@ class Client:
             print("Packet Loss!")
         else:
             result = pickle.loads(b"".join(recv_data))
-            print(f'받은 데이터:{result.shape}\n{data_total_len}')
+            print(f'Received Data:{result.shape}\n{data_total_len}')
             result = result[0].transpose(1,2,0)*255
             cv2.imwrite('./result.png', result)
     
