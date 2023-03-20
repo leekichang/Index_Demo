@@ -48,7 +48,6 @@ class Client:
     
     def send(self):
         while True:
-            # try:
             user_input = int(input('Enter image number:'))
             if user_input == -1:
                 self.socket.sendall(str(user_input).encode())
@@ -62,20 +61,14 @@ class Client:
                     pass
                 else:
                     data_byte = pickle.dumps(data)
-                    print('step1')
                     self.socket.sendall(str(len(data_byte)).encode())
-                    print('step2')
                     time.sleep(1)
-                    print('step3')
+            
                     self.socket.sendall(data_byte)
-                    print('step4')
                     print(f"DATA SENT")
                     print(f"np.shape(data):{np.shape(data)}")
                     print(f"len(data_byte):{len(data_byte)}")
                     break
-            # except:
-            #     print('step5')
-            #     pass
 
     def recv(self):
         data_total_len     = int(self.socket.recv(1024))
