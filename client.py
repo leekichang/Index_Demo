@@ -15,7 +15,7 @@ warnings.filterwarnings(action='ignore')
 
 class Client:
     def __init__(self, SERVER_ADDRESS):
-        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket = socket(AF_INET, SOCK_DGRAM)
         self.socket.connect(SERVER_ADDRESS)
         self.connected = True
         print("Client Connected!")

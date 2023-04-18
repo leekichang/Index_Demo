@@ -12,7 +12,7 @@ from SegNet import SegNet
 class Server:
 	def __init__(self, SERVER_ADDRESS):
 		self.address  = SERVER_ADDRESS
-		self.socket   = socket(AF_INET, SOCK_STREAM)
+		self.socket   = socket(AF_INET, SOCK_DGRAM)
 		self.socket.bind(self.address)
 		self.socket.listen(1)
 		print("server is ready")
