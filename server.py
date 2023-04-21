@@ -15,9 +15,7 @@ class Server:
         self.socket   = socket(AF_INET, SOCK_STREAM)
         self.socket.bind(self.address)
         self.socket.listen(1)
-        print("server is ready")
         self.client_socket, self.client_addr = self.socket.accept()
-        print(f"server connected by {self.client_addr}")
         self.request = None
         self.connected = True
         self.model = None
@@ -101,6 +99,8 @@ class Server:
 if __name__ == '__main__':
     args = utils.parse_args()
     SERVER_ADDRESS = ('0.0.0.0', args.p)
+    print("STARTING")
     server = Server(SERVER_ADDRESS)
+    print("CONNECTED")
     server.set_model()
     server.run()

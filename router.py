@@ -13,15 +13,12 @@ from attacker import *
 class C2S(Server):     # Client -> C2S -> Server Forwarding
     def __init__(self, SERVER_ADDRESS):
         super().__init__(SERVER_ADDRESS)
-    
+            
     def send(self, data):
         data_byte = pickle.dumps(data)
         self.client_socket.sendall(str(len(data_byte)).encode())
         # time.sleep(1)
         self.client_socket.sendall(data_byte)
-        print(f"DATA SENT")
-        print(f"np.shape(data):{np.shape(data)}")
-        print(f"len(data_byte):{len(data_byte)}")
         self.request = None
     
     def recv(self):
@@ -30,7 +27,6 @@ class C2S(Server):     # Client -> C2S -> Server Forwarding
         buffer_size    = 4096
         
         if data_total_len == -1:
-            print("DISCONNECTED!")
             self.connected = False
             self.request = -1
             return -1
@@ -46,7 +42,6 @@ class C2S(Server):     # Client -> C2S -> Server Forwarding
             print("Packet Loss!")
         else:
             self.request = pickle.loads(b"".join(recv_data))
-            print(f'Received Data:{type(self.request)}\nlen(data):{data_total_len}')
 
 class S2C(Client):   # Server -> S2C -> Client Forwarding
     def __init__(self, SERVER_ADDRESS):
@@ -70,7 +65,6 @@ class S2C(Client):   # Server -> S2C -> Client Forwarding
             return
         else:
             result = pickle.loads(b"".join(recv_data))
-            print("FUCK")
             return result
     
     def send(self, data):
@@ -84,9 +78,6 @@ class S2C(Client):   # Server -> S2C -> Client Forwarding
             self.socket.sendall(str(len(data_byte)).encode())
             
             self.socket.sendall(data_byte)
-            print(f"DATA SENT")
-            print(f"np.shape(data):{np.shape(data)}")
-            print(f"len(data_byte):{len(data_byte)}")        
 
 class Router:
     def __init__(self, ROUTER_ADDRESS, SERVER_ADDRESS):
@@ -100,8 +91,9 @@ class Router:
         self.attacker = Attacker()
         '''
         self.attack_type = "f1", normal routing
-        self.attack_type = "f2", reconstruction attack
-        self.attack_type = "f3", adversarial attack
+        self.attack_type = "f2", train
+        self.attack_type = "f3", reconstruction attack
+        self.attack_type = "f4", adversarial attack
         '''
     
     def keyboard_event_loop(self):
@@ -112,6 +104,11 @@ class Router:
                 self.attack_key = self.key_input
                 print(f"{cfg.ATTACK_TYPES[self.attack_key]}")
     
+    def attacker_train(self):
+        while True:
+            if cfg.ATTACK_TYPES[self.attack_key] == 'train':
+                print("HELLO WORLD!", flush=True)
+        
     def run(self):
         while True:
             self.c2s.recv()
@@ -120,7 +117,19 @@ class Router:
                 self.c2s.connect()
                 self.s2c.connect()
                 self.c2s.recv()
-            self.s2c.send(data=self.c2s.request)
+            if cfg.ATTACK_TYPES[self.attack_key] == 'Normal':
+                self.s2c.send(data=self.c2s.request)
+            elif cfg.ATTACK_TYPES[self.attack_key] == 'Reconstruction Attack':
+                # TODO: Implement data revealing
+                self.attacker.reconstruction_attack(self.c2s.request)
+                self.s2c.send(data=self.c2s.request)
+            elif cfg.ATTACK_TYPES[self.attack_key] == 'Adversarial Attack':
+                # TODO: Implement data manipulation
+                adv_data = self.attacker.adversarial_attack(self.c2s.request)
+                self.s2c.send(data=adv_data)
+            elif cfg.ATTACK_TYPES[self.attack_key] == 'Train':
+                # TODO: Implement data manipulation
+                self.s2c.send(data=self.c2s.request)
             response = self.s2c.recv()
             self.c2s.send(data=response)    
 
