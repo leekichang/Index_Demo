@@ -46,7 +46,7 @@ class Server:
 			data = self.compute()
 			data_byte = pickle.dumps(data)
 			self.client_socket.sendall(str(len(data_byte)).encode())
-			time.sleep(1)
+			# time.sleep(1)
 
 			self.client_socket.sendall(data_byte)
 			print(f"DATA SENT")
@@ -64,7 +64,7 @@ class Server:
 			self.connected = False
 			return
 		
-		time.sleep(1)
+		# time.sleep(1)
 
 		recv_data = []
 		while True:
