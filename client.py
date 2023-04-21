@@ -15,14 +15,18 @@ warnings.filterwarnings(action='ignore')
 
 class Client:
     def __init__(self, SERVER_ADDRESS):
-        self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.connect(SERVER_ADDRESS)
+        self.SERVER_ADDRESS = SERVER_ADDRESS
+        self.socket = None
+        self.connect()
         self.connected = True
         print("Client Connected!")
+        self.model = None
+        
+    def set_model(self):
         self.model = SegNet(n_layers=13, n_class=3)
         self.model.load_state_dict(torch.load('./reconstructor_300.pth', map_location=torch.device(cfg.DEVICE)))
-        self.model.to(cfg.DEVICE)
         self.model.eval()
+        self.model.to(cfg.DEVICE)
 
     def compute(self, request):
         try:
@@ -91,6 +95,11 @@ class Client:
             result = result[0].transpose(1,2,0)*255
             cv2.imwrite('./result.png', result)
     
+    def connect(self):
+        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket.connect(self.SERVER_ADDRESS)
+        self.connected = True
+    
     def run(self):
         while True:
             self.send()
@@ -105,6 +114,7 @@ if __name__ == '__main__':
     args = utils.parse_args()
     SERVER_ADDRESS = (args.ip, args.p)
     client = Client(SERVER_ADDRESS)
+    client.set_model()
     client.run()
 
 
