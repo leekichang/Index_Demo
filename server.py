@@ -14,7 +14,7 @@ class Server:
         self.address  = SERVER_ADDRESS
         self.socket   = socket(AF_INET, SOCK_STREAM)
         self.socket.bind(self.address)
-        self.socket.listen(1)
+        self.socket.listen(2)
         self.client_socket, self.client_addr = self.socket.accept()
         self.request = None
         self.connected = True
@@ -48,7 +48,6 @@ class Server:
             data = self.compute()
             data_byte = pickle.dumps(data)
             self.client_socket.sendall(str(len(data_byte)).encode())
-            # time.sleep(1)
             self.client_socket.sendall(data_byte)
             print(f"DATA SENT")
             print(f"np.shape(data):{np.shape(data)}")
@@ -64,8 +63,6 @@ class Server:
             print("DISCONNECTED!")
             self.connected = False
             return
-        
-        # time.sleep(1)
         
         recv_data = []
         while True:
