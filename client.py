@@ -13,6 +13,8 @@ from SegNet import SegNet
 import warnings
 warnings.filterwarnings(action='ignore')
 
+# TODO: connect jetson + camera, for real time inference
+
 class Client:
     def __init__(self, SERVER_ADDRESS):
         self.SERVER_ADDRESS = SERVER_ADDRESS
