@@ -14,6 +14,7 @@ import warnings
 warnings.filterwarnings(action='ignore')
 
 # TODO: connect jetson + camera, for real time inference
+# TODO: test the codes on jetson
 
 class Client:
     def __init__(self, SERVER_ADDRESS):
