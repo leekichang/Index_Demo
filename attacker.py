@@ -4,6 +4,8 @@ import config as cfg
 from SegNet import SegNet
 from client import *
 
+# TODO: add train demo
+
 class Attacker:
     def __init__(self):
         self.model = SegNet(n_layers=13, n_class=3)
