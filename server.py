@@ -48,7 +48,7 @@ class Server:
             data = self.compute()
             data_byte = pickle.dumps(data)
             self.client_socket.sendall(str(len(data_byte)).encode())
-            # time.sleep(1)
+            time.sleep(1)
             self.client_socket.sendall(data_byte)
             print(f"DATA SENT")
             print(f"np.shape(data):{np.shape(data)}")
@@ -57,9 +57,9 @@ class Server:
         
     def recv(self):
         data_total_len = int(self.client_socket.recv(4096))
-        # time.sleep(0.5)
         left_recv_len  = data_total_len
         buffer_size    = 4096
+        time.sleep(1)
         
         if data_total_len == -1:
             print("DISCONNECTED!")

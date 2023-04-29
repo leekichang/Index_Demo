@@ -69,7 +69,7 @@ class Client:
                 else:
                     data_byte = pickle.dumps(data)
                     self.socket.sendall(str(len(data_byte)).encode())
-                    # time.sleep(1)
+                    time.sleep(1)
                     self.socket.sendall(data_byte)
                     print(f"DATA SENT")
                     print(f"np.shape(data):{np.shape(data)}")
@@ -80,7 +80,7 @@ class Client:
         data_total_len = int(self.socket.recv(4096))
         left_recv_len  = data_total_len
         buffer_size    = 4096
-        # time.sleep(0.5)
+        time.sleep(1)
 
         recv_data = []
         while True:
