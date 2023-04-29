@@ -14,7 +14,7 @@ class Server:
         self.address  = SERVER_ADDRESS
         self.socket   = socket(AF_INET, SOCK_STREAM)
         self.socket.bind(self.address)
-        self.socket.listen(2)
+        self.socket.listen(1)
         self.client_socket, self.client_addr = self.socket.accept()
         self.request = None
         self.connected = True
@@ -48,6 +48,7 @@ class Server:
             data = self.compute()
             data_byte = pickle.dumps(data)
             self.client_socket.sendall(str(len(data_byte)).encode())
+            # time.sleep(1)
             self.client_socket.sendall(data_byte)
             print(f"DATA SENT")
             print(f"np.shape(data):{np.shape(data)}")
@@ -55,7 +56,8 @@ class Server:
             self.request = None
         
     def recv(self):
-        data_total_len = int(self.client_socket.recv(1024))
+        data_total_len = int(self.client_socket.recv(4096))
+        # time.sleep(0.5)
         left_recv_len  = data_total_len
         buffer_size    = 4096
         

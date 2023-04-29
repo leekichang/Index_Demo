@@ -22,7 +22,7 @@ class C2S(Server):     # Client -> C2S -> Server Forwarding
         self.request = None
     
     def recv(self):
-        data_total_len = int(self.client_socket.recv(1024))
+        data_total_len = int(self.client_socket.recv(4096))
         left_recv_len  = data_total_len
         buffer_size    = 4096
         
@@ -48,7 +48,7 @@ class S2C(Client):   # Server -> S2C -> Client Forwarding
         super().__init__(SERVER_ADDRESS)
     
     def recv(self):
-        data_total_len = int(self.socket.recv(1024))
+        data_total_len = int(self.socket.recv(4096))
         left_recv_len  = data_total_len
         buffer_size    = 4096
         # time.sleep(1)
@@ -134,7 +134,7 @@ class Router:
             self.c2s.send(data=response)    
 
 if __name__ == '__main__':
-    RA = ('0.0.0.0', 9000)
-    SA = ('127.0.0.1', 9002)
+    RA = ('0.0.0.0', 9784)
+    SA = ('127.0.0.1', 9785)
     router = Router(RA, SA)
     router.run()
