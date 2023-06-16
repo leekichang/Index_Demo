@@ -1,0 +1,145 @@
+#client.py
+import cv2
+import torch
+import threading
+import time
+from socket import *
+import pickle
+import numpy as np
+import utils
+import config as cfg
+from SegNet import SegNet
+
+import warnings
+warnings.filterwarnings(action='ignore')
+
+class Client:
+    def __init__(self, SERVER_ADDRESS):
+        self.SERVER_ADDRESS = SERVER_ADDRESS
+        self.socket = None
+        self.connect()
+        self.connected = True
+        print("Client Connected!")
+        self.model = None
+        self.cap = None
+        self.cap = cv2.VideoCapture(0)  # 0 corresponds to the first available webcam
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        # Check if the webcam is successfully opened
+        if not self.cap.isOpened():
+            print("Failed to open the webcam")
+        
+    def set_model(self):
+        self.model = SegNet(n_layers=13, n_class=3)
+        self.model.load_state_dict(torch.load('./reconstructor_300.pth', map_location=torch.device(cfg.DEVICE)))
+        self.model.eval()
+        self.model.to(cfg.DEVICE)
+
+    def compute(self, request):
+        try:
+            img = np.array(\
+                cv2.imread(f'./test.png',\
+                cv2.IMREAD_COLOR)/255).transpose(2,0,1)
+            print("IMAGE LOADED!")
+            X = torch.empty((1,3,224,224))
+            X[0] = torch.tensor(img)
+            X = X.to(cfg.DEVICE)
+            with torch.no_grad():
+                features = self.model.encode(X)
+            features = features.to(cfg.DEVICE)
+            indices = []
+            for idx in self.model.indices:
+                indices.append(idx.to('cpu'))
+            feature_dict = {'feature':features, 'indices':indices, 'shapes':self.model.shapes}
+            print("FINISHED LOCAL COMPUTATION")
+            return feature_dict
+        except:
+            print(f"WRONG IMAGE NAME ./{request}_image.png DOESN'T EXIST")
+            return -1
+    
+    def send(self):
+        while True:
+            #user_input = input('Enter q to exit')
+            user_input = '_'
+            if user_input == 'q':
+                self.socket.sendall(str(user_input).encode())
+                self.connected = False
+                self.socket.close()
+                print("DISCONNECT!")
+                break
+            else:
+                data = self.compute(request=user_input)
+                if data == -1:
+                    pass
+                else:
+                    data_byte = pickle.dumps(data)
+                    self.socket.sendall(str(len(data_byte)).encode())
+                    time.sleep(1)
+                    self.socket.sendall(data_byte)
+                    print(f"DATA SENT")
+                    print(f"np.shape(data):{np.shape(data)}")
+                    print(f"len(data_byte):{len(data_byte)}")
+                    break
+
+    def recv(self):
+        data_total_len = int(self.socket.recv(4096))
+        left_recv_len  = data_total_len
+        buffer_size    = 4096
+        time.sleep(1)
+
+        recv_data = []
+        while True:
+            chunk = self.socket.recv(buffer_size)
+            recv_data.append(chunk)
+            left_recv_len -= len(chunk)
+            if left_recv_len <= 0:
+                break
+        if not left_recv_len == 0:
+            print("Packet Loss!")
+        else:
+            result = pickle.loads(b"".join(recv_data))
+            print(f'Received Data:{result.shape}\n{data_total_len}')
+            result = result[0].transpose(1,2,0)*255
+            cv2.imwrite('./result.png', result)
+    
+    def connect(self):
+        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket.connect(self.SERVER_ADDRESS)
+        self.connected = True
+    
+    def run(self):
+        while True:
+            while True:
+                # Capture frame-by-frame
+                ret, frame = self.cap.read()
+                # Check if the frame is successfully captured
+                if not ret:
+                    print("Failed to capture frame")
+                    break
+                # Display the resulting frame
+                cv2.imshow('Webcam', frame)
+                # Check for the 'q' key to quit
+                k = cv2.waitKey(1)
+                if  k == ord('c'):
+                    H,W,_ = frame.shape
+                    frame = frame[:, W//2-H//2:W//2+H//2]
+                    cv2.imwrite('./test.png',\
+                                cv2.resize(frame, (224,224)))
+                    self.send()
+                    if not self.check_connection():break
+                    self.recv()
+                    if not self.check_connection():break
+                if  k == ord('q'):
+                    break
+
+    def check_connection(self):
+        return self.connected
+
+if __name__ == '__main__':
+    args = utils.parse_args()
+    SERVER_ADDRESS = (args.ip, args.p)
+    client = Client(SERVER_ADDRESS)
+    client.set_model()
+    client.run()
+
+

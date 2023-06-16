@@ -84,7 +84,7 @@ class Router:
         self.RA, self.SA = ROUTER_ADDRESS, SERVER_ADDRESS
         self.c2s    = C2S(ROUTER_ADDRESS)
         self.s2c    = S2C(SERVER_ADDRESS)
-        self.attack_key = "f1"
+        self.attack_key = "1"
         self.keyboard_thread = threading.Thread(target=self.keyboard_event_loop)
         self.keyboard_thread.daemon = True
         self.keyboard_thread.start()
@@ -135,6 +135,6 @@ class Router:
 
 if __name__ == '__main__':
     RA = ('0.0.0.0', 9784)
-    SA = ('127.0.0.1', 9785)
+    SA = ('1.233.218.27', 9785)
     router = Router(RA, SA)
     router.run()
